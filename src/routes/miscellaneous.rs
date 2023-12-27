@@ -5,8 +5,7 @@ pub(super) async fn unhandled(uri: Uri, body: String) -> StatusCode {
     println!("\tURI: {:?}", uri);
 
     println!("\tParams:");
-    body.split('&')
-        .for_each(|pair| println!("\t\t{pair}"));
+    body.split('&').for_each(|pair| println!("\t\t{pair}"));
 
     StatusCode::IM_A_TEAPOT
 }

@@ -1,4 +1,4 @@
-use axum::{Router, routing::any};
+use axum::{routing::any, Router};
 
 mod miscellaneous;
 
