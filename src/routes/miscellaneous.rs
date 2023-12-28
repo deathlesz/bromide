@@ -1,11 +1,12 @@
 use axum::http::{StatusCode, Uri};
+use tracing::debug;
 
 pub(super) async fn unhandled(uri: Uri, body: String) -> StatusCode {
-    println!("Got unhandled request:");
-    println!("\tURI: {:?}", uri);
+    debug!("Got unhandled request:");
+    debug!("\tURI: {:?}", uri);
 
-    println!("\tParams:");
-    body.split('&').for_each(|pair| println!("\t\t{pair}"));
+    debug!("\tParams:");
+    body.split('&').for_each(|pair| debug!("\t\t{pair}"));
 
     StatusCode::IM_A_TEAPOT
 }

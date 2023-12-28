@@ -11,3 +11,6 @@ target/
 
 # RustRover
 .idea/
+
+# Bromide config
+Config.toml
