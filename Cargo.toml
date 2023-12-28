@@ -1,11 +1,20 @@
 [package]
 name = "bromide"
 version = "0.1.0"
+authors = ["Deathlesz"]
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+description = "A server software reimplementation for a certain platformer."
+readme = "README.md"
+license = "MIT OR Apache-2.0"
+publish = false
 
 [dependencies]
-axum = "0.7.2"
-sqlx = { version = "0.7.3", features = ["macros", "sqlite"] }
-tokio = { version = "1.35.1", features = ["macros", "rt-multi-thread"] }
+axum = "0.7"
+sqlx = { version = "0.7", features = ["macros", "sqlite"] }
+tokio = { version = "1.35", features = ["macros", "rt-multi-thread"] }
+
+[profile.release]
+strip = true
+lto = true
+panic = "abort"
+codegen-units = 1
