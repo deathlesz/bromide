@@ -1,12 +1,14 @@
+use sqlx::SqlitePool;
 use tracing::{error, info, warn};
-use tracing_subscriber::layer::SubscriberExt;
-use tracing_subscriber::util::SubscriberInitExt;
+use tracing_subscriber::{layer::SubscriberExt as _, util::SubscriberInitExt as _};
 
-use crate::error::ConfigError;
+use crate::{config::Config, error::ConfigError, state::AppState};
 
 mod config;
 mod error;
+mod forms;
 mod routes;
+mod state;
 
 #[tokio::main]
 async fn main() {
@@ -20,7 +22,7 @@ async fn main() {
 
     info!("loading config");
 
-    let config = config::Config::try_load().unwrap_or_else(|err| {
+    let config = Config::try_load().unwrap_or_else(|err| {
         warn!("{err}");
 
         match err {
@@ -32,7 +34,7 @@ async fn main() {
             _ => {
                 info!("generating default config");
 
-                let config = config::Config::default();
+                let config = Config::default();
                 config.try_save().unwrap_or_else(|err| {
                     error!("{err}");
                     warn!("server will continue to start up with default config, however, config will not be saved")
@@ -42,17 +44,28 @@ async fn main() {
         }
     });
 
+    info!("connecting to database");
+
+    let pool = SqlitePool::connect("sqlite:database.db")
+        .await
+        .unwrap_or_else(|err| {
+            error!("couldn't connect to database: {err}");
+            std::process::exit(1);
+        });
+
+    let state = AppState::new(config, pool);
+
     info!("starting server");
 
-    let address = config.address();
+    let address = state.config().address();
     axum::serve(
-        tokio::net::TcpListener::bind(config.address())
+        tokio::net::TcpListener::bind(state.config().address())
             .await
             .unwrap_or_else(|err| {
                 error!("failed to bind to {address}: {err}");
                 std::process::exit(1);
             }),
-        routes::router(config),
+        routes::router(state),
     )
     .await
     .unwrap_or_else(|err| {

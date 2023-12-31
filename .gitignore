@@ -12,5 +12,11 @@ target/
 # RustRover
 .idea/
 
+# Environment variables
+.env
+
+# Database
+database.db
+
 # Bromide config
 Config.toml

@@ -1,5 +1,4 @@
-use std::fs::File;
-use std::io::Write;
+use std::{fs::File, io::Write as _};
 
 use serde::{Deserialize, Serialize};
 
@@ -16,6 +15,7 @@ pub struct Config {
 struct GeneralConfig {
     ip: String,
     port: u16,
+    api_url: String,
 }
 
 impl Config {
@@ -34,6 +34,10 @@ impl Config {
     pub fn address(&self) -> String {
         format!("{}:{}", self.general.ip, self.general.port)
     }
+
+    pub fn api_url(&self) -> &str {
+        &self.general.api_url
+    }
 }
 
 impl Default for GeneralConfig {
@@ -41,6 +45,7 @@ impl Default for GeneralConfig {
         Self {
             ip: "0.0.0.0".into(),
             port: 8080,
+            api_url: "/database".into(),
         }
     }
 }
