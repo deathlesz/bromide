@@ -22,27 +22,29 @@ async fn main() {
 
     info!("loading config");
 
-    let config = Config::try_load().unwrap_or_else(|err| {
-        warn!("{err}");
+    let config = tokio::task::spawn_blocking(move || {
+        Config::try_load().unwrap_or_else(|err| {
+            warn!("{err}");
 
-        match err {
-            ConfigError::FailedToDeserializeConfig(_) => {
-                warn!("delete Config.toml to regenerate config with default values or fix the error above");
+            match err {
+                ConfigError::FailedToDeserializeConfig(_) => {
+                    warn!("delete Config.toml to regenerate config with default values or fix the error above");
 
-                std::process::exit(1);
+                    std::process::exit(1);
+                }
+                _ => {
+                    info!("generating default config");
+
+                    let config = Config::default();
+                    config.try_save().unwrap_or_else(|err| {
+                        error!("{err}");
+                        warn!("server will continue to start up with default config, however, config will not be saved")
+                    });
+                    config
+                }
             }
-            _ => {
-                info!("generating default config");
-
-                let config = Config::default();
-                config.try_save().unwrap_or_else(|err| {
-                    error!("{err}");
-                    warn!("server will continue to start up with default config, however, config will not be saved")
-                });
-                config
-            }
-        }
-    });
+        })
+    }).await.expect("must not panic");
 
     info!("connecting to database");
 
