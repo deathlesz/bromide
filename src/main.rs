@@ -2,13 +2,15 @@ use sqlx::SqlitePool;
 use tracing::{error, info, warn};
 use tracing_subscriber::{layer::SubscriberExt as _, util::SubscriberInitExt as _};
 
-use crate::{config::Config, error::ConfigError, state::AppState};
+pub(crate) use crate::{config::Config, state::AppState};
+use crate::error::ConfigError;
 
 mod config;
 mod error;
 mod forms;
 mod routes;
 mod state;
+mod utils;
 
 #[tokio::main]
 async fn main() {
@@ -69,9 +71,9 @@ async fn main() {
             }),
         routes::router(state),
     )
-    .await
-    .unwrap_or_else(|err| {
-        error!("failed to start a server: {err:?}");
-        std::process::exit(1);
-    })
+        .await
+        .unwrap_or_else(|err| {
+            error!("failed to start a server: {err:?}");
+            std::process::exit(1);
+        })
 }

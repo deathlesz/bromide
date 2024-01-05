@@ -34,6 +34,9 @@ pub enum RegisterError {
     #[error("email is taken")]
     EmailIsTaken,
 
+    #[cfg(feature = "argon2")]
+    #[error("hashing error: {0}")]
+    HashingError(#[from] argon2::password_hash::Error),
     #[error("database error: {0}")]
     DatabaseError(#[from] sqlx::Error),
 }
@@ -42,6 +45,8 @@ impl IntoResponse for RegisterError {
     fn into_response(self) -> Response {
         let error_code = match self {
             Self::UserNameIsNotAlphanumeric | Self::DatabaseError(_) => "-1",
+            #[cfg(feature = "argon2")]
+            Self::HashingError(_) => "-1",
             Self::UserNameTooShort => "-9",
             Self::UserNameTooLong => "-4",
             Self::InvalidPassword | Self::PasswordTooLong => "-5",

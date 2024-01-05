@@ -1,8 +1,7 @@
 use axum::{extract::State, Form};
-use sha1_smol::Sha1;
 use sqlx::query;
 
-use crate::{error::RegisterError, forms, AppState};
+use crate::{AppState, error::RegisterError, forms, utils};
 
 pub(super) async fn register<'a>(
     State(state): State<AppState>,
@@ -32,9 +31,9 @@ pub(super) async fn register<'a>(
         "SELECT COUNT(1) as count FROM `accounts` WHERE `user_name` = ?",
         payload.user_name
     )
-    .fetch_one(state.pool())
-    .await?
-    .count;
+        .fetch_one(state.pool())
+        .await?
+        .count;
 
     if count > 0 {
         return Err(RegisterError::UserNameIsTaken);
@@ -44,26 +43,26 @@ pub(super) async fn register<'a>(
         "SELECT COUNT(1) as count FROM `accounts` WHERE `email` = ?",
         payload.email
     )
-    .fetch_one(state.pool())
-    .await?
-    .count;
+        .fetch_one(state.pool())
+        .await?
+        .count;
 
     if count > 0 {
         return Err(RegisterError::EmailIsTaken);
     }
 
-    let mut sha1 = Sha1::from(payload.password);
-    sha1.update(b"mI29fmAnxgTs");
-    let hexdigest = sha1.hexdigest();
+    let hash = utils::password_hash(&payload.password);
+    #[cfg(feature = "argon2")]
+        let hash = hash?;
 
     query!(
         "INSERT INTO `accounts` (user_name, email, password) VALUES (?, ?, ?)",
         payload.user_name,
         payload.email,
-        hexdigest
+        hash
     )
-    .execute(state.pool())
-    .await?;
+        .execute(state.pool())
+        .await?;
 
     Ok("1")
 }

@@ -9,6 +9,7 @@ license = "MIT OR Apache-2.0"
 publish = false
 
 [dependencies]
+argon2 = { version = "0.5.2", features = ["std"], optional = true }
 axum = { version = "0.7", features = ["tracing"] }
 email_address = { version = "0.2", default-features = false }
 serde = { version = "1.0", features = ["derive"] }
@@ -19,6 +20,9 @@ tokio = { version = "1.35", features = ["macros", "rt-multi-thread"] }
 toml = "0.8"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[features]
+argon2 = ["dep:argon2"]
 
 [profile.release]
 strip = true
