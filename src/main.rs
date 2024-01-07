@@ -74,6 +74,7 @@ async fn main() {
             }),
         routes::router(state),
     )
+    .with_graceful_shutdown(utils::shutdown_signal())
     .await
     .unwrap_or_else(|err| {
         error!("failed to start a server: {err:?}");
