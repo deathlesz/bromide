@@ -16,7 +16,7 @@ target/
 .env
 
 # Database
-database.db
+*.db*
 
 # Bromide config
 Config.toml

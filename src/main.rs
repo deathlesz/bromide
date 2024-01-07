@@ -2,8 +2,8 @@ use sqlx::SqlitePool;
 use tracing::{error, info, warn};
 use tracing_subscriber::{layer::SubscriberExt as _, util::SubscriberInitExt as _};
 
-pub(crate) use crate::{config::Config, state::AppState};
 use crate::error::ConfigError;
+pub(crate) use crate::{config::Config, state::AppState};
 
 mod config;
 mod error;
@@ -23,7 +23,6 @@ async fn main() {
         .init();
 
     info!("loading config");
-
     let config = tokio::task::spawn_blocking(move || {
         Config::try_load().unwrap_or_else(|err| {
             warn!("{err}");
@@ -49,18 +48,22 @@ async fn main() {
     }).await.expect("must not panic");
 
     info!("connecting to database");
-
-    let pool = SqlitePool::connect("sqlite:database.db")
+    let pool = SqlitePool::connect("sqlite:bromide.db")
         .await
         .unwrap_or_else(|err| {
             error!("couldn't connect to database: {err}");
             std::process::exit(1);
         });
 
+    info!("performing migrations");
+    sqlx::migrate!().run(&pool).await.unwrap_or_else(|err| {
+        error!("failed to migrate: {err}");
+        std::process::exit(1);
+    });
+
     let state = AppState::new(config, pool);
 
     info!("starting server");
-
     let address = state.config().address();
     axum::serve(
         tokio::net::TcpListener::bind(state.config().address())
@@ -71,9 +74,9 @@ async fn main() {
             }),
         routes::router(state),
     )
-        .await
-        .unwrap_or_else(|err| {
-            error!("failed to start a server: {err:?}");
-            std::process::exit(1);
-        })
+    .await
+    .unwrap_or_else(|err| {
+        error!("failed to start a server: {err:?}");
+        std::process::exit(1);
+    })
 }
