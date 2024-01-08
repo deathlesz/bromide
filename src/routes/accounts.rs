@@ -52,9 +52,6 @@ pub(super) async fn register<'a>(
     }
 
     let hash = utils::password_hash(&payload.password);
-    #[cfg(feature = "argon2")]
-        let hash = hash?;
-
     query!(
         "INSERT INTO `accounts` (user_name, email, password) VALUES (?, ?, ?)",
         payload.user_name,
