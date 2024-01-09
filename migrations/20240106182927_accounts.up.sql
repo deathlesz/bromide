@@ -1,9 +1,10 @@
 DROP TABLE IF EXISTS `accounts`;
-CREATE TABLE "accounts" (
-    "id" INTEGER,
-    "user_name" TEXT NOT NULL UNIQUE,
-    "email" TEXT NOT NULL UNIQUE,
-    "password" TEXT NOT NULL,
+CREATE TABLE "accounts"
+(
+    "id"        INTEGER NOT NULL UNIQUE,
+    "user_name" TEXT    NOT NULL UNIQUE COLLATE NOCASE,
+    "email"     TEXT    NOT NULL UNIQUE COLLATE NOCASE,
+    "password"  TEXT    NOT NULL,
 
-    PRIMARY KEY("id" AUTOINCREMENT)
+    PRIMARY KEY ("id" AUTOINCREMENT)
 );

@@ -3,7 +3,7 @@
 use axum::response::{IntoResponse, Response};
 
 #[derive(Debug, thiserror::Error)]
-pub enum ConfigError {
+pub(super) enum ConfigError {
     #[error("failed to access config file: {0}")]
     FailedToLoadConfig(#[from] std::io::Error),
     #[error("failed to deserialize config: {0}")]
@@ -13,7 +13,7 @@ pub enum ConfigError {
 }
 
 #[derive(Debug, thiserror::Error)]
-pub enum RegisterError {
+pub(crate) enum RegisterError {
     #[error("user_name is not alphanumeric")]
     UserNameIsNotAlphanumeric,
     #[error("user_name is too short")]
@@ -50,6 +50,26 @@ impl IntoResponse for RegisterError {
 
             Self::UserNameIsTaken => "-2",
             Self::EmailIsTaken => "-3",
+        };
+
+        error_code.into_response()
+    }
+}
+
+#[derive(Debug, thiserror::Error)]
+pub(crate) enum LoginError {
+    #[error("incorrect credentials")]
+    IncorrectCredentials,
+
+    #[error("database error: {0}")]
+    DatabaseError(#[from] sqlx::Error),
+}
+
+impl IntoResponse for LoginError {
+    fn into_response(self) -> Response {
+        let error_code = match self {
+            Self::IncorrectCredentials => "-11",
+            Self::DatabaseError(_) => "-1",
         };
 
         error_code.into_response()

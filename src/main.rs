@@ -2,8 +2,8 @@ use sqlx::SqlitePool;
 use tracing::{error, info, warn};
 use tracing_subscriber::{layer::SubscriberExt as _, util::SubscriberInitExt as _};
 
-use crate::error::ConfigError;
 pub(crate) use crate::{config::Config, state::AppState};
+use crate::error::ConfigError;
 
 mod config;
 mod error;
@@ -74,10 +74,10 @@ async fn main() {
             }),
         routes::router(state),
     )
-    .with_graceful_shutdown(utils::shutdown_signal())
-    .await
-    .unwrap_or_else(|err| {
-        error!("failed to start a server: {err:?}");
-        std::process::exit(1);
-    })
+        .with_graceful_shutdown(utils::shutdown_signal())
+        .await
+        .unwrap_or_else(|err| {
+            error!("failed to start a server: {err:?}");
+            std::process::exit(1);
+        })
 }

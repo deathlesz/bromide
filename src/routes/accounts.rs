@@ -1,12 +1,15 @@
-use axum::{extract::State, Form};
+use axum::{extract::State, Form, response::IntoResponse};
 use sqlx::query;
 
-use crate::{AppState, error::RegisterError, forms, utils};
+use crate::{
+    AppState,
+    error::{LoginError, RegisterError}, forms, utils,
+};
 
-pub(super) async fn register<'a>(
+pub(super) async fn register(
     State(state): State<AppState>,
     Form(payload): Form<forms::accounts::RegisterGJAccount>,
-) -> Result<&'static str, RegisterError> {
+) -> Result<impl IntoResponse, RegisterError> {
     if !payload.user_name.chars().all(char::is_alphanumeric) {
         return Err(RegisterError::UserNameIsNotAlphanumeric);
     } else if payload.user_name.len() < 3 {
@@ -52,14 +55,49 @@ pub(super) async fn register<'a>(
     }
 
     let hash = utils::password_hash(&payload.password);
-    query!(
-        "INSERT INTO `accounts` (user_name, email, password) VALUES (?, ?, ?)",
+
+    // using transaction here because we don't want to create an account if user creation is failed to create and vice versa
+    let mut transcation = state.pool().begin().await?;
+    let account_id = query!(
+        "INSERT INTO `accounts` (`user_name`, `email`, `password`) VALUES (?, ?, ?) RETURNING `id`",
         payload.user_name,
         payload.email,
         hash
     )
-        .execute(state.pool())
+        .fetch_one(&mut *transcation)
+        .await?
+        .id;
+
+    query!("INSERT INTO `users` (`account_id`) VALUES (?)", account_id)
+        .execute(&mut *transcation)
         .await?;
 
+    // if function errored then transaction will go out of scope and will be rolled back according to docs
+    // otherwise, commit
+    transcation.commit().await?;
+
     Ok("1")
+}
+
+pub(crate) async fn login(
+    State(state): State<AppState>,
+    Form(payload): Form<forms::accounts::LoginGJAccount>,
+) -> Result<impl IntoResponse, LoginError> {
+    let result = query!(
+        "SELECT `id`, `password` FROM `accounts` WHERE `user_name` = ?",
+        payload.user_name
+    )
+        .fetch_one(state.pool())
+        .await?;
+
+    if result.password != payload.gjp2 {
+        return Err(LoginError::IncorrectCredentials);
+    }
+
+    let user_id = query!("SELECT `id` FROM `users` WHERE `account_id` = ?", result.id)
+        .fetch_one(state.pool())
+        .await?
+        .id;
+
+    Ok(format!("{},{}", result.id, user_id))
 }
