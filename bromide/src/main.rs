@@ -1,9 +1,11 @@
+extern crate response_error;
+
 use sqlx::SqlitePool;
 use tracing::{error, info, warn};
 use tracing_subscriber::{layer::SubscriberExt as _, util::SubscriberInitExt as _};
 
-pub(crate) use crate::{config::Config, state::AppState};
 use crate::error::ConfigError;
+pub(crate) use crate::{config::Config, state::AppState};
 
 mod config;
 mod error;
@@ -48,12 +50,17 @@ async fn main() {
     }).await.expect("must not panic");
 
     info!("connecting to database");
-    let pool = SqlitePool::connect("sqlite:bromide.db")
-        .await
-        .unwrap_or_else(|err| {
-            error!("couldn't connect to database: {err}");
-            std::process::exit(1);
-        });
+    let pool = SqlitePool::connect(
+        &std::env::vars()
+            .find(|(name, _)| name == "DATABASE_URL")
+            .map(|(_, value)| value)
+            .unwrap_or("sqlite://bromide.db".into()),
+    )
+    .await
+    .unwrap_or_else(|err| {
+        error!("couldn't connect to database: {err}");
+        std::process::exit(1);
+    });
 
     info!("performing migrations");
     sqlx::migrate!().run(&pool).await.unwrap_or_else(|err| {
@@ -74,10 +81,10 @@ async fn main() {
             }),
         routes::router(state),
     )
-        .with_graceful_shutdown(utils::shutdown_signal())
-        .await
-        .unwrap_or_else(|err| {
-            error!("failed to start a server: {err:?}");
-            std::process::exit(1);
-        })
+    .with_graceful_shutdown(utils::shutdown_signal())
+    .await
+    .unwrap_or_else(|err| {
+        error!("failed to start a server: {err:?}");
+        std::process::exit(1);
+    })
 }

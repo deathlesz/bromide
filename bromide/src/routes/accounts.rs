@@ -1,9 +1,9 @@
-use axum::{extract::State, Form, response::IntoResponse};
+use axum::{extract::State, response::IntoResponse, Form};
 use sqlx::query;
 
 use crate::{
-    AppState,
-    error::{LoginError, RegisterError}, forms, utils,
+    error::{LoginError, RegisterError},
+    forms, utils, AppState,
 };
 
 pub(super) async fn register(
@@ -34,9 +34,9 @@ pub(super) async fn register(
         "SELECT COUNT(1) as count FROM `accounts` WHERE `user_name` = ?",
         payload.user_name
     )
-        .fetch_one(state.pool())
-        .await?
-        .count;
+    .fetch_one(state.pool())
+    .await?
+    .count;
 
     if count > 0 {
         return Err(RegisterError::UserNameIsTaken);
@@ -46,9 +46,9 @@ pub(super) async fn register(
         "SELECT COUNT(1) as count FROM `accounts` WHERE `email` = ?",
         payload.email
     )
-        .fetch_one(state.pool())
-        .await?
-        .count;
+    .fetch_one(state.pool())
+    .await?
+    .count;
 
     if count > 0 {
         return Err(RegisterError::EmailIsTaken);
@@ -64,9 +64,9 @@ pub(super) async fn register(
         payload.email,
         hash
     )
-        .fetch_one(&mut *transcation)
-        .await?
-        .id;
+    .fetch_one(&mut *transcation)
+    .await?
+    .id;
 
     query!("INSERT INTO `users` (`account_id`) VALUES (?)", account_id)
         .execute(&mut *transcation)
@@ -87,8 +87,8 @@ pub(crate) async fn login(
         "SELECT `id`, `password` FROM `accounts` WHERE `user_name` = ?",
         payload.user_name
     )
-        .fetch_one(state.pool())
-        .await?;
+    .fetch_one(state.pool())
+    .await?;
 
     if result.password != payload.gjp2 {
         return Err(LoginError::IncorrectCredentials);

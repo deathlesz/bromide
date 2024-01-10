@@ -1,6 +1,6 @@
 #![allow(clippy::enum_variant_names)]
 
-use axum::response::{IntoResponse, Response};
+use axum::response::IntoResponse;
 
 #[derive(Debug, thiserror::Error)]
 pub(super) enum ConfigError {
@@ -12,66 +12,46 @@ pub(super) enum ConfigError {
     FailedToSerializeConfig(#[from] toml::ser::Error),
 }
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, thiserror::Error, response_error::ResponseError)]
 pub(crate) enum RegisterError {
     #[error("user_name is not alphanumeric")]
     UserNameIsNotAlphanumeric,
     #[error("user_name is too short")]
+    #[response(error_code = "-9")]
     UserNameTooShort,
     #[error("user_name is too long")]
+    #[response(error_code = "-4")]
     UserNameTooLong,
     #[error("invalid password")]
+    #[response(error_code = "-5")]
     InvalidPassword,
     #[error("password is too short")]
+    #[response(error_code = "-8")]
     PasswordTooShort,
     #[error("password is too long")]
+    #[response(error_code = "-5")]
     PasswordTooLong,
     #[error("invalid email")]
+    #[response(error_code = "-6")]
     InvalidEmail,
 
     #[error("user_name is taken")]
+    #[response(error_code = "-2")]
     UserNameIsTaken,
     #[error("email is taken")]
+    #[response(error_code = "-3")]
     EmailIsTaken,
 
     #[error("database error: {0}")]
     DatabaseError(#[from] sqlx::Error),
 }
 
-impl IntoResponse for RegisterError {
-    fn into_response(self) -> Response {
-        let error_code = match self {
-            Self::UserNameIsNotAlphanumeric | Self::DatabaseError(_) => "-1",
-            Self::UserNameTooShort => "-9",
-            Self::UserNameTooLong => "-4",
-            Self::InvalidPassword | Self::PasswordTooLong => "-5",
-            Self::PasswordTooShort => "-8",
-            Self::InvalidEmail => "-6",
-
-            Self::UserNameIsTaken => "-2",
-            Self::EmailIsTaken => "-3",
-        };
-
-        error_code.into_response()
-    }
-}
-
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, thiserror::Error, response_error::ResponseError)]
 pub(crate) enum LoginError {
     #[error("incorrect credentials")]
+    #[response(error_code = "-11")]
     IncorrectCredentials,
 
     #[error("database error: {0}")]
     DatabaseError(#[from] sqlx::Error),
-}
-
-impl IntoResponse for LoginError {
-    fn into_response(self) -> Response {
-        let error_code = match self {
-            Self::IncorrectCredentials => "-11",
-            Self::DatabaseError(_) => "-1",
-        };
-
-        error_code.into_response()
-    }
 }
