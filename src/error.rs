@@ -13,7 +13,7 @@ pub(super) enum ConfigError {
 }
 
 #[derive(Debug, thiserror::Error, response_error::ResponseError)]
-pub(crate) enum RegisterError {
+pub(crate) enum RegisterGJAccountError {
     #[error("user_name is not alphanumeric")]
     UserNameIsNotAlphanumeric,
     #[error("user_name is too short")]
@@ -47,7 +47,7 @@ pub(crate) enum RegisterError {
 }
 
 #[derive(Debug, thiserror::Error, response_error::ResponseError)]
-pub(crate) enum LoginError {
+pub(crate) enum LoginGJAccountError {
     #[error("incorrect credentials")]
     #[response(error_code = "-11")]
     IncorrectCredentials,

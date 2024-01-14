@@ -2,62 +2,62 @@ use axum::{extract::State, response::IntoResponse, Form};
 use sqlx::query;
 
 use crate::{
-    error::{LoginError, RegisterError},
+    error::{LoginGJAccountError, RegisterGJAccountError},
     forms, utils, AppState,
 };
 
 pub(super) async fn register(
     State(state): State<AppState>,
     Form(payload): Form<forms::accounts::RegisterGJAccount>,
-) -> Result<impl IntoResponse, RegisterError> {
+) -> Result<impl IntoResponse, RegisterGJAccountError> {
     if !payload.user_name.chars().all(char::is_alphanumeric) {
-        return Err(RegisterError::UserNameIsNotAlphanumeric);
+        return Err(RegisterGJAccountError::UserNameIsNotAlphanumeric);
     } else if payload.user_name.len() < 3 {
-        return Err(RegisterError::UserNameTooShort);
+        return Err(RegisterGJAccountError::UserNameTooShort);
     } else if payload.user_name.len() > 20 {
-        return Err(RegisterError::UserNameTooLong);
+        return Err(RegisterGJAccountError::UserNameTooLong);
     } else if !payload
         .password
         .chars()
         .all(|char| char.is_alphanumeric() || char == '-' || char == '_')
     {
-        return Err(RegisterError::InvalidPassword);
+        return Err(RegisterGJAccountError::InvalidPassword);
     } else if payload.password.len() < 3 {
-        return Err(RegisterError::PasswordTooShort);
+        return Err(RegisterGJAccountError::PasswordTooShort);
     } else if payload.password.len() > 20 {
-        return Err(RegisterError::PasswordTooLong);
+        return Err(RegisterGJAccountError::PasswordTooLong);
     } else if !email_address::EmailAddress::is_valid(&payload.email) {
-        return Err(RegisterError::InvalidEmail);
+        return Err(RegisterGJAccountError::InvalidEmail);
     }
 
     let count = query!(
         "SELECT COUNT(1) as count FROM `accounts` WHERE `user_name` = ?",
         payload.user_name
     )
-    .fetch_one(state.pool())
+    .fetch_one(&state.pool)
     .await?
     .count;
 
     if count > 0 {
-        return Err(RegisterError::UserNameIsTaken);
+        return Err(RegisterGJAccountError::UserNameIsTaken);
     }
 
     let count = query!(
         "SELECT COUNT(1) as count FROM `accounts` WHERE `email` = ?",
         payload.email
     )
-    .fetch_one(state.pool())
+    .fetch_one(&state.pool)
     .await?
     .count;
 
     if count > 0 {
-        return Err(RegisterError::EmailIsTaken);
+        return Err(RegisterGJAccountError::EmailIsTaken);
     }
 
     let hash = utils::password_hash(&payload.password);
 
     // using transaction here because we don't want to create an account if user creation is failed to create and vice versa
-    let mut transcation = state.pool().begin().await?;
+    let mut transcation = state.pool.begin().await?;
     let account_id = query!(
         "INSERT INTO `accounts` (`user_name`, `email`, `password`) VALUES (?, ?, ?) RETURNING `id`",
         payload.user_name,
@@ -82,20 +82,20 @@ pub(super) async fn register(
 pub(crate) async fn login(
     State(state): State<AppState>,
     Form(payload): Form<forms::accounts::LoginGJAccount>,
-) -> Result<impl IntoResponse, LoginError> {
+) -> Result<impl IntoResponse, LoginGJAccountError> {
     let result = query!(
         "SELECT `id`, `password` FROM `accounts` WHERE `user_name` = ?",
         payload.user_name
     )
-    .fetch_one(state.pool())
+    .fetch_one(&state.pool)
     .await?;
 
     if result.password != payload.gjp2 {
-        return Err(LoginError::IncorrectCredentials);
+        return Err(LoginGJAccountError::IncorrectCredentials);
     }
 
     let user_id = query!("SELECT `id` FROM `users` WHERE `account_id` = ?", result.id)
-        .fetch_one(state.pool())
+        .fetch_one(&state.pool)
         .await?
         .id;
 

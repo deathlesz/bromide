@@ -54,7 +54,7 @@ async fn main() {
         &std::env::vars()
             .find(|(name, _)| name == "DATABASE_URL")
             .map(|(_, value)| value)
-            .unwrap_or("sqlite://bromide.db".into()),
+            .unwrap_or("sqlite:bromide.db".into()),
     )
     .await
     .unwrap_or_else(|err| {
@@ -68,12 +68,12 @@ async fn main() {
         std::process::exit(1);
     });
 
-    let state = AppState::new(config, pool);
+    let state = AppState { config, pool };
 
     info!("starting server");
-    let address = state.config().address();
+    let address = state.config.address();
     axum::serve(
-        tokio::net::TcpListener::bind(state.config().address())
+        tokio::net::TcpListener::bind(state.config.address())
             .await
             .unwrap_or_else(|err| {
                 error!("failed to bind to {address}: {err}");
