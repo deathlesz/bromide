@@ -55,3 +55,23 @@ pub(crate) enum LoginGJAccountError {
     #[error("database error: {0}")]
     DatabaseError(#[from] sqlx::Error),
 }
+
+#[derive(Debug, thiserror::Error, response_error::ResponseError)]
+pub(crate) enum GetGJUserInfoError {
+    #[error("incorrect gjp2")]
+    IncorrectGJP2,
+
+    #[error("database error: {0}")]
+    DatabaseError(#[from] sqlx::Error),
+}
+
+#[derive(Debug, thiserror::Error, response_error::ResponseError)]
+pub(crate) enum UpdateGJUserScoreError {
+    #[error("incorrect credentials")]
+    IncorrectCredentials,
+    #[error("incorrect seed2")]
+    IncorrectSeed2,
+
+    #[error("database error: {0}")]
+    DatabaseError(#[from] sqlx::Error),
+}
