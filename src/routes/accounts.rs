@@ -31,7 +31,7 @@ pub(super) async fn register(
     }
 
     let count = query!(
-        "SELECT COUNT(1) as count FROM `accounts` WHERE `user_name` = ?",
+        "SELECT COUNT(1) as count FROM `users` WHERE `user_name` = ?",
         payload.user_name
     )
     .fetch_one(&state.pool)
@@ -43,7 +43,7 @@ pub(super) async fn register(
     }
 
     let count = query!(
-        "SELECT COUNT(1) as count FROM `accounts` WHERE `email` = ?",
+        "SELECT COUNT(1) as count FROM `users` WHERE `email` = ?",
         payload.email
     )
     .fetch_one(&state.pool)
@@ -56,25 +56,14 @@ pub(super) async fn register(
 
     let hash = utils::password_hash(&payload.password);
 
-    // using transaction here because we don't want to create an account if user creation is failed to create and vice versa
-    let mut transcation = state.pool.begin().await?;
-    let account_id = query!(
-        "INSERT INTO `accounts` (`user_name`, `email`, `password`) VALUES (?, ?, ?) RETURNING `id`",
+    query!(
+        "INSERT INTO `users` (`user_name`, `email`, `password`) VALUES (?, ?, ?)",
         payload.user_name,
         payload.email,
         hash
     )
-    .fetch_one(&mut *transcation)
-    .await?
-    .id;
-
-    query!("INSERT INTO `users` (`account_id`) VALUES (?)", account_id)
-        .execute(&mut *transcation)
-        .await?;
-
-    // if function errored then transaction will go out of scope and will be rolled back according to docs
-    // otherwise, commit
-    transcation.commit().await?;
+    .execute(&state.pool)
+    .await?;
 
     Ok("1")
 }
@@ -84,7 +73,7 @@ pub(crate) async fn login(
     Form(payload): Form<forms::accounts::LoginGJAccount>,
 ) -> Result<impl IntoResponse, LoginGJAccountError> {
     let result = query!(
-        "SELECT `id`, `password` FROM `accounts` WHERE `user_name` = ?",
+        "SELECT `id`, `password` FROM `users` WHERE `user_name` = ?",
         payload.user_name
     )
     .fetch_one(&state.pool)
@@ -94,10 +83,5 @@ pub(crate) async fn login(
         return Err(LoginGJAccountError::IncorrectCredentials);
     }
 
-    let user_id = query!("SELECT `id` FROM `users` WHERE `account_id` = ?", result.id)
-        .fetch_one(&state.pool)
-        .await?
-        .id;
-
-    Ok(format!("{},{}", result.id, user_id))
+    Ok(format!("{0},{0}", result.id))
 }
