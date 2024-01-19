@@ -75,3 +75,12 @@ pub(crate) enum UpdateGJUserScoreError {
     #[error("database error: {0}")]
     DatabaseError(#[from] sqlx::Error),
 }
+
+#[derive(Debug, thiserror::Error, response_error::ResponseError)]
+pub(crate) enum GetGJAccountCommentsError {
+    #[error("no target account ID specified")]
+    NoTargetAccountIDSpecified,
+
+    #[error("database error: {0}")]
+    DatabaseError(#[from] sqlx::Error),
+}

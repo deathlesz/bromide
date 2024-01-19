@@ -6,6 +6,7 @@ use axum::{
 use crate::state::AppState;
 
 mod accounts;
+mod comments;
 mod miscellaneous;
 mod users;
 
@@ -17,7 +18,11 @@ pub fn router(state: AppState) -> Router {
                 .route("/accounts/registerGJAccount.php", post(accounts::register))
                 .route("/accounts/loginGJAccount.php", post(accounts::login))
                 .route("/getGJUserInfo20.php", post(users::get_user_info))
-                .route("/updateGJUserScore22.php", post(users::update_user_score)),
+                .route("/updateGJUserScore22.php", post(users::update_user_score))
+                .route(
+                    "/getGJAccountComments20.php",
+                    post(comments::get_account_comments),
+                ),
         )
         .route("/*rest", any(miscellaneous::unhandled))
         .with_state(state)
