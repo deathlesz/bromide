@@ -1186,7 +1186,7 @@ checksum = "c08c74e62047bb2de4ff487b251e4a92e24f48745648451635cec7d591162d9f"
 [[package]]
 name = "response_error"
 version = "0.1.0"
-source = "git+https://github.com/Deathlesz/ResponseError.git#e8213755f67991f5e84464fdf992a7a3e7b6bf3c"
+source = "git+https://github.com/Deathlesz/ResponseError.git#01b73042cb7113324d0cb97dae1be982699cad51"
 dependencies = [
  "darling",
  "proc-macro2",

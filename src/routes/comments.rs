@@ -1,12 +1,15 @@
 use axum::{extract::State, response::IntoResponse, Form};
 use sqlx::query;
 
-use crate::{error::GetGJAccountCommentsError, forms, AppState};
+use crate::{
+    error::{GetGJAccountCommentsError, Result},
+    forms, AppState,
+};
 
 pub(super) async fn get_account_comments(
     State(state): State<AppState>,
     Form(payload): Form<forms::comments::GetGJAccountComments>,
-) -> Result<impl IntoResponse, GetGJAccountCommentsError> {
+) -> Result<impl IntoResponse> {
     let offset = payload.page * 10;
     let user_id = payload
         .account_id()

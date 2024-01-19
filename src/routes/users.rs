@@ -2,14 +2,14 @@ use axum::{extract::State, response::IntoResponse, Form};
 use sqlx::query;
 
 use crate::{
-    error::{GetGJUserInfoError, UpdateGJUserScoreError},
+    error::{Error, Result},
     forms, utils, AppState,
 };
 
 pub(super) async fn get_user_info(
     State(state): State<AppState>,
     Form(payload): Form<forms::users::GetGJUserInfo>,
-) -> Result<impl IntoResponse, GetGJUserInfoError> {
+) -> Result<impl IntoResponse> {
     let own_profile = match (payload.account_id, payload.gjp2) {
         (Some(account_id), Some(gjp2)) => {
             let password = query!(
@@ -21,7 +21,7 @@ pub(super) async fn get_user_info(
             .password;
 
             if password != gjp2 {
-                return Err(GetGJUserInfoError::IncorrectGJP2);
+                return Err(Error::IncorrectGJP2);
             }
 
             account_id == payload.target_account_id
@@ -95,7 +95,7 @@ pub(super) async fn get_user_info(
 pub(super) async fn update_user_score(
     State(state): State<AppState>,
     Form(payload): Form<forms::users::UpdateGJUserScore>,
-) -> Result<impl IntoResponse, UpdateGJUserScoreError> {
+) -> Result<impl IntoResponse> {
     let result = query!(
         "SELECT `password` FROM `users` WHERE `id` = ?",
         payload.account_id
@@ -104,7 +104,7 @@ pub(super) async fn update_user_score(
     .await?;
 
     if result.password != payload.gjp2 {
-        return Err(UpdateGJUserScoreError::IncorrectCredentials);
+        return Err(Error::IncorrectGJP2);
     }
 
     let chk = utils::generate_chk(
@@ -133,7 +133,7 @@ pub(super) async fn update_user_score(
     .unwrap();
 
     if chk != payload.seed2 {
-        return Err(UpdateGJUserScoreError::IncorrectSeed2);
+        return Err(Error::IncorrectChk);
     }
 
     query!(

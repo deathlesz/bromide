@@ -1,6 +1,6 @@
 #![allow(clippy::enum_variant_names)]
 
-use axum::response::IntoResponse;
+pub(crate) type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, thiserror::Error)]
 pub(super) enum ConfigError {
@@ -10,6 +10,26 @@ pub(super) enum ConfigError {
     FailedToDeserializeConfig(#[from] toml::de::Error),
     #[error("failed to serialize config: {0}")]
     FailedToSerializeConfig(#[from] toml::ser::Error),
+}
+
+#[derive(Debug, thiserror::Error, response_error::ResponseError)]
+pub(crate) enum Error {
+    #[error("incorrect gjp2")]
+    IncorrectGJP2,
+    #[error("incorrect chk/seed2")]
+    IncorrectChk,
+    #[error("database error: {0}")]
+    DatabaseError(#[from] sqlx::Error),
+
+    #[error(transparent)]
+    #[response(transparent)]
+    RegisterGJAccountError(#[from] RegisterGJAccountError),
+    #[error(transparent)]
+    #[response(transparent)]
+    LoginGJAccountError(#[from] LoginGJAccountError),
+    #[error(transparent)]
+    #[response(transparent)]
+    GetGJAccountCommentsError(#[from] GetGJAccountCommentsError),
 }
 
 #[derive(Debug, thiserror::Error, response_error::ResponseError)]
@@ -41,9 +61,6 @@ pub(crate) enum RegisterGJAccountError {
     #[error("email is taken")]
     #[response(error_code = "-3")]
     EmailIsTaken,
-
-    #[error("database error: {0}")]
-    DatabaseError(#[from] sqlx::Error),
 }
 
 #[derive(Debug, thiserror::Error, response_error::ResponseError)]
@@ -51,36 +68,10 @@ pub(crate) enum LoginGJAccountError {
     #[error("incorrect credentials")]
     #[response(error_code = "-11")]
     IncorrectCredentials,
-
-    #[error("database error: {0}")]
-    DatabaseError(#[from] sqlx::Error),
-}
-
-#[derive(Debug, thiserror::Error, response_error::ResponseError)]
-pub(crate) enum GetGJUserInfoError {
-    #[error("incorrect gjp2")]
-    IncorrectGJP2,
-
-    #[error("database error: {0}")]
-    DatabaseError(#[from] sqlx::Error),
-}
-
-#[derive(Debug, thiserror::Error, response_error::ResponseError)]
-pub(crate) enum UpdateGJUserScoreError {
-    #[error("incorrect credentials")]
-    IncorrectCredentials,
-    #[error("incorrect seed2")]
-    IncorrectSeed2,
-
-    #[error("database error: {0}")]
-    DatabaseError(#[from] sqlx::Error),
 }
 
 #[derive(Debug, thiserror::Error, response_error::ResponseError)]
 pub(crate) enum GetGJAccountCommentsError {
     #[error("no target account ID specified")]
     NoTargetAccountIDSpecified,
-
-    #[error("database error: {0}")]
-    DatabaseError(#[from] sqlx::Error),
 }
