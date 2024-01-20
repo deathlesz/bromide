@@ -26,6 +26,10 @@ pub fn router(state: AppState) -> Router {
                 .route(
                     "/uploadGJAccComment20.php",
                     post(comments::upload_account_comment),
+                )
+                .route(
+                    "/deleteGJAccComment20.php",
+                    post(comments::delete_account_comment),
                 ),
         )
         .route("/*rest", any(miscellaneous::unhandled))

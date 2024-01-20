@@ -92,3 +92,29 @@ pub(super) async fn upload_account_comment(
 
     Ok(format!("{id}"))
 }
+
+pub(super) async fn delete_account_comment(
+    State(state): State<AppState>,
+    Form(payload): Form<forms::comments::DeleteGJAccComment>,
+) -> Result<impl IntoResponse> {
+    let result = query!(
+        "SELECT `password` FROM `users` WHERE `id` = ?",
+        payload.target_account_id
+    )
+    .fetch_one(&state.pool)
+    .await?;
+
+    if result.password != payload.gjp2 {
+        return Err(Error::IncorrectGJP2);
+    }
+
+    query!(
+        "DELETE FROM `account_comments` WHERE `id` = ? AND `user_id` = ?",
+        payload.comment_id,
+        payload.target_account_id
+    )
+    .execute(&state.pool)
+    .await?;
+
+    Ok("1")
+}

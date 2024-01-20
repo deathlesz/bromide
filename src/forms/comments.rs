@@ -31,3 +31,12 @@ pub(crate) struct UploadGJAccComment {
     pub comment: String, // encoded with urlsafe base64
     pub chk: String,
 }
+
+#[derive(Debug, Deserialize)]
+pub(crate) struct DeleteGJAccComment {
+    pub gjp2: String,
+    #[serde(rename = "targetAccountID")]
+    pub target_account_id: u32,
+    #[serde(rename = "commentID")]
+    pub comment_id: u32,
+}
