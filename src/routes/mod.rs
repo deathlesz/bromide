@@ -22,6 +22,10 @@ pub fn router(state: AppState) -> Router {
                 .route(
                     "/getGJAccountComments20.php",
                     post(comments::get_account_comments),
+                )
+                .route(
+                    "/uploadGJAccComment20.php",
+                    post(comments::upload_account_comment),
                 ),
         )
         .route("/*rest", any(miscellaneous::unhandled))

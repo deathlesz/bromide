@@ -20,3 +20,14 @@ impl GetGJAccountComments {
             .unwrap_or(None)
     }
 }
+
+#[derive(Debug, Deserialize)]
+pub(crate) struct UploadGJAccComment {
+    #[serde(rename = "accountID")]
+    pub account_id: u32,
+    pub gjp2: String,
+    #[serde(rename = "userName")]
+    pub user_name: String,
+    pub comment: String, // encoded with urlsafe base64
+    pub chk: String,
+}
