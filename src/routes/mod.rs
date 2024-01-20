@@ -20,6 +20,10 @@ pub fn router(state: AppState) -> Router {
                 .route("/getGJUserInfo20.php", post(users::get_user_info))
                 .route("/updateGJUserScore22.php", post(users::update_user_score))
                 .route(
+                    "/updateGJAccSettings20.php",
+                    post(users::update_account_settings),
+                )
+                .route(
                     "/getGJAccountComments20.php",
                     post(comments::get_account_comments),
                 )

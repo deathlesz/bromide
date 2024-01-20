@@ -58,3 +58,20 @@ pub(crate) struct UpdateGJUserScore {
     pub jetpack_id: u16,
     pub seed2: String,
 }
+
+#[derive(Debug, Deserialize)]
+pub(crate) struct UpdateGJAccSettings {
+    #[serde(rename = "accountID")]
+    pub account_id: u32,
+    pub gjp2: String,
+    #[serde(rename = "mS")]
+    pub message_state: u8,
+    #[serde(rename = "frS")]
+    pub friend_state: u8,
+    #[serde(rename = "cS")]
+    pub comment_history_state: u8,
+    #[serde(rename = "yt")]
+    pub youtube: String,
+    pub twitter: String,
+    pub twitch: String,
+}

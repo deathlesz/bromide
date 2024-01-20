@@ -167,3 +167,29 @@ pub(super) async fn update_user_score(
 
     Ok(format!("{}", payload.account_id))
 }
+
+pub(super) async fn update_account_settings(
+    State(state): State<AppState>,
+    Form(payload): Form<forms::users::UpdateGJAccSettings>,
+) -> Result<impl IntoResponse> {
+    let result = query!(
+        "SELECT `password` FROM `users` WHERE `id` = ?",
+        payload.account_id
+    )
+    .fetch_one(&state.pool)
+    .await?;
+
+    if result.password != payload.gjp2 {
+        return Err(Error::IncorrectGJP2);
+    }
+
+    // ignoring errors because updateGJAccSettings returns 1 regardless of anything being updated
+    _ = query!(
+        "UPDATE `users` SET `message_state` = ?, `friend_state` = ?, `comment_history_state` = ?, `youtube_url` = ?, `twitter_url` = ?, `twitch_url` = ? WHERE `id` = ?", 
+        payload.message_state, payload.friend_state, payload.comment_history_state, payload.youtube, payload.twitter, payload.twitch, payload.account_id
+    )
+        .execute(&state.pool)
+        .await;
+
+    Ok("1")
+}
