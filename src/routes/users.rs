@@ -109,28 +109,27 @@ pub(super) async fn update_user_score(
 
     let chk = utils::generate_chk(
         &[
-            payload.account_id,
-            payload.user_coins as u32,
-            payload.demons,
-            payload.stars,
-            payload.secret_coins as u32,
-            payload.icon_type as u32,
-            payload.icon_id as u32,
-            payload.diamonds,
-            payload.cube_id as u32,
-            payload.ship_id as u32,
-            payload.ball_id as u32,
-            payload.ufo_id as u32,
-            payload.wave_id as u32,
-            payload.robot_id as u32,
-            payload.glowing as u32,
-            payload.spider_id as u32,
-            payload.explosion_id as u32,
+            &payload.account_id,
+            &payload.user_coins,
+            &payload.demons,
+            &payload.stars,
+            &payload.secret_coins,
+            &payload.icon_type,
+            &payload.icon_id,
+            &payload.diamonds,
+            &payload.cube_id,
+            &payload.ship_id,
+            &payload.ball_id,
+            &payload.ufo_id,
+            &payload.wave_id,
+            &payload.robot_id,
+            &payload.glowing,
+            &payload.spider_id,
+            &payload.explosion_id,
         ],
         "xI35fsAapCRg",
         "85271",
-    )
-    .unwrap();
+    );
 
     if chk != payload.seed2 {
         return Err(Error::IncorrectChk);

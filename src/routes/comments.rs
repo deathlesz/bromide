@@ -1,9 +1,8 @@
 use axum::{extract::State, response::IntoResponse, Form};
 use sqlx::query;
 
-use crate::error::Error;
 use crate::{
-    error::{GetGJAccountCommentsError, Result},
+    error::{Error, GetGJAccountCommentsError, Result},
     forms, utils, AppState,
 };
 
@@ -65,17 +64,10 @@ pub(super) async fn upload_account_comment(
     }
 
     let chk = utils::generate_chk(
-        &[
-            &payload.user_name,
-            &payload.comment,
-            &"0".into(),
-            &"0".into(),
-            &"1".into(),
-        ],
+        &[&payload.user_name, &payload.comment, &0, &0, &1],
         "xPT6iUrtws0J",
         "29481",
-    )
-    .expect("should never panic");
+    );
 
     if chk != payload.chk {
         return Err(Error::IncorrectChk);

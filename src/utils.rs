@@ -2,6 +2,9 @@ use base64::prelude::{Engine as _, BASE64_URL_SAFE};
 use sha1_smol::Sha1;
 use std::time::{SystemTime, UNIX_EPOCH};
 
+pub(crate) trait ToStringAndDisplay: ToString + std::fmt::Display {}
+impl<T: ToString + std::fmt::Display> ToStringAndDisplay for T {}
+
 pub(crate) fn password_hash(password: &str) -> String {
     let mut sha1 = Sha1::from(password);
     sha1.update(b"mI29fmAnxgTs");
@@ -9,22 +12,20 @@ pub(crate) fn password_hash(password: &str) -> String {
     sha1.hexdigest()
 }
 
-pub(crate) fn generate_chk<T, K>(params: &[T], salt: &str, key: K) -> Option<String>
+pub(crate) fn generate_chk<K>(params: &[&(dyn ToStringAndDisplay)], salt: &str, key: K) -> String
 where
-    T: ToString,
     K: AsRef<[u8]>,
 {
     let concatenated = params
         .iter()
-        .map(ToString::to_string)
-        .reduce(|acc, e| format!("{acc}{e}"))?;
+        .fold(String::with_capacity(10), |acc, e| format!("{acc}{e}"));
 
     let mut sha1 = Sha1::from(concatenated);
     sha1.update(salt.as_bytes());
 
     let xored = xor_cipher(sha1.hexdigest(), key);
 
-    Some(BASE64_URL_SAFE.encode(xored))
+    BASE64_URL_SAFE.encode(xored)
 }
 
 // This is beatiful.
