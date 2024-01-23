@@ -31,7 +31,7 @@ pub(super) async fn get_account_comments(
             "2~{}~3~{}~4~{}~5~{}~6~{}~7~{}~8~{1}~9~{}",
             comment.text,
             comment.user_id,
-            comment.likes,
+            comment.likes - comment.dislikes,
             comment.dislikes,
             comment.id,
             comment.is_spam,

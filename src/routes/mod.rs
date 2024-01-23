@@ -34,7 +34,8 @@ pub fn router(state: AppState) -> Router {
                 .route(
                     "/deleteGJAccComment20.php",
                     post(comments::delete_account_comment),
-                ),
+                )
+                .route("/likeGJItem211.php", post(miscellaneous::like_item)),
         )
         .route("/*rest", any(miscellaneous::unhandled))
         .with_state(state)
