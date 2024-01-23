@@ -96,6 +96,13 @@ pub(super) async fn update_user_score(
     State(state): State<AppState>,
     Form(payload): Form<forms::users::UpdateGJUserScore>,
 ) -> Result<impl IntoResponse> {
+    // This is awful but apparently GD can send UpdateGJUserScore requests when you're not logged in.
+    let (account_id, gjp2) = if payload.account_id.is_none() || payload.gjp2.is_none() {
+        return Err(Error::IncorrectGJP2);
+    } else {
+        (payload.account_id.unwrap(), payload.gjp2.unwrap())
+    };
+
     let result = query!(
         "SELECT `password` FROM `users` WHERE `id` = ?",
         payload.account_id
@@ -103,13 +110,13 @@ pub(super) async fn update_user_score(
     .fetch_one(&state.pool)
     .await?;
 
-    if result.password != payload.gjp2 {
+    if result.password != gjp2 {
         return Err(Error::IncorrectGJP2);
     }
 
     let chk = utils::generate_chk(
         &[
-            &payload.account_id,
+            &account_id,
             &payload.user_coins,
             &payload.demons,
             &payload.stars,
@@ -159,12 +166,12 @@ pub(super) async fn update_user_score(
         payload.explosion_id,
         payload.swing_id,
         payload.jetpack_id,
-        payload.account_id
+        account_id
     )
     .execute(&state.pool)
     .await?;
 
-    Ok(format!("{}", payload.account_id))
+    Ok(format!("{}", account_id))
 }
 
 pub(super) async fn update_account_settings(

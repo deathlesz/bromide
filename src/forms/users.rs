@@ -12,8 +12,8 @@ pub(crate) struct GetGJUserInfo {
 #[derive(Debug, Deserialize)]
 pub(crate) struct UpdateGJUserScore {
     #[serde(rename = "accountID")]
-    pub account_id: u32,
-    pub gjp2: String,
+    pub account_id: Option<u32>,
+    pub gjp2: Option<String>,
     pub stars: u32,
     pub moons: u32,
     pub demons: u32,
