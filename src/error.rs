@@ -14,6 +14,9 @@ pub(super) enum ConfigError {
 
 #[derive(Debug, thiserror::Error, response_error::ResponseError)]
 pub(crate) enum Error {
+    #[error("generic error occured")]
+    Generic,
+
     #[error("incorrect gjp2")]
     IncorrectGJP2,
     #[error("incorrect chk/seed2")]

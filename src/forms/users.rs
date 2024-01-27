@@ -75,3 +75,10 @@ pub(crate) struct UpdateGJAccSettings {
     pub twitter: String,
     pub twitch: String,
 }
+
+#[derive(Debug, Deserialize)]
+pub(crate) struct GetGJUsers {
+    #[serde(rename = "str")]
+    pub query: String,
+    pub page: u8,
+}

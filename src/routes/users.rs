@@ -1,5 +1,5 @@
 use axum::{extract::State, response::IntoResponse, Form};
-use sqlx::query;
+use sqlx::{query, Row};
 
 use crate::{
     error::{Error, Result},
@@ -198,4 +198,64 @@ pub(super) async fn update_account_settings(
         .await;
 
     Ok("1")
+}
+
+pub(super) async fn get_users(
+    State(state): State<AppState>,
+    Form(payload): Form<forms::users::GetGJUsers>,
+) -> Result<impl IntoResponse> {
+    let offset = payload.page * 10;
+
+    let (field, r#where) = if payload.query.chars().all(char::is_numeric) {
+        ("id", "`id` = ?".into())
+    } else {
+        (
+            "user_name",
+            format!("`user_name` LIKE '{}%'", payload.query),
+        )
+    };
+
+    let query =
+        format!("SELECT * FROM `users` WHERE {where} ORDER BY `{field}` DESC LIMIT 10 OFFSET ?");
+
+    let users = sqlx::query(&query)
+        .bind(offset)
+        .fetch_all(&state.pool)
+        .await?;
+
+    if users.is_empty() {
+        return Err(Error::Generic);
+    }
+
+    let count = users.len();
+
+    let mut response = String::with_capacity(100);
+    for (idx, user) in users.into_iter().enumerate() {
+        response.push_str(&format!(
+            "1:{}:2:{}:3:{}:4:{}:6:{}:8:{}:9:{}:10:{}:11:{}:13:{}:14:{}:15:{}:16:{}:17:{}:52:{}",
+            user.get::<&str, _>("user_name"),
+            user.get::<u32, _>("id"),
+            user.get::<u32, _>("stars"),
+            // TODO: fix later
+            0, // user.get::<u32, _>("demons"),
+            1,
+            user.get::<u32, _>("creator_points"),
+            user.get::<u16, _>("icon_id"),
+            user.get::<u16, _>("primary_color"),
+            user.get::<u16, _>("secondary_color"),
+            user.get::<u16, _>("secret_coins"),
+            user.get::<u8, _>("icon_type"),
+            user.get::<u8, _>("glowing"),
+            user.get::<u32, _>("id"),
+            user.get::<u32, _>("user_coins"),
+            user.get::<u32, _>("moons"),
+        ));
+
+        if idx < count - 1 {
+            response.push('|');
+        }
+    }
+    response.push_str(&format!("#{}:{}:10", count, offset));
+
+    Ok(response)
 }
