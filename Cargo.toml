@@ -1,0 +1,15 @@
+[package]
+name = "bromide"
+version = "0.1.0"
+authors = ["Deathlesz"]
+edition = "2021"
+description = "A server software reimplementation for a certain platformer."
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+axum = { version = "0.7", features = ["tracing"] }
+sqlx = { version = "0.8", features = ["sqlite", "runtime-tokio"] }
+tokio = { version = "1.40", features = ["macros", "rt-multi-thread"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+serde = "1.0"
