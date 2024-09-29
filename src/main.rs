@@ -17,11 +17,7 @@ async fn main() {
     info!("connection to the database");
     sqlx::any::install_default_drivers();
 
-    let database_url = std::env::vars()
-        .find(|(name, _)| name == "DATABASE_URL")
-        .map(|(_, value)| value)
-        .unwrap_or("sqlite:bromide.db".into());
-
+    let database_url = std::env::var("DATABASE_URL").unwrap_or_else(|_| "sqlite:bromide.db".into());
     let pool = sqlx::AnyPool::connect(&database_url)
         .await
         .unwrap_or_else(|err| {
@@ -29,10 +25,7 @@ async fn main() {
             std::process::exit(1);
         });
 
-    let address = std::env::vars()
-        .find(|(name, _)| name == "BIND_ADDRESS")
-        .map(|(_, value)| value)
-        .unwrap_or("0.0.0.0:8000".into());
+    let address = std::env::var("BIND_ADDRESS").unwrap_or_else(|_| "0.0.0.0:8000".into());
 
     info!("trying to bind to `{address}`...");
     axum::serve(
