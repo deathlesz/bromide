@@ -4,6 +4,7 @@ use tracing_subscriber::{layer::SubscriberExt as _, util::SubscriberInitExt as _
 mod error;
 mod router;
 mod schema;
+mod utils;
 
 #[tokio::main]
 async fn main() {
