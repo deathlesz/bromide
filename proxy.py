@@ -9,4 +9,5 @@ def request(flow: mitmproxy.http.HTTPFlow):
     if request.host in HOSTS_TO_INTERCEPT:
         request.path = request.path.replace("/database", "")
         request.host = "localhost"
-        request.port = 8080
+        request.port = 8000
+        request.scheme = "http"
