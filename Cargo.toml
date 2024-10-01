@@ -8,7 +8,7 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 axum = { version = "0.7", features = ["tracing"] }
-sqlx = { version = "0.8", features = ["sqlite", "runtime-tokio"] }
+sqlx = { version = "0.8", features = ["postgres", "runtime-tokio"] }
 tokio = { version = "1.40", features = ["macros", "rt-multi-thread"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }

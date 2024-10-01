@@ -3,7 +3,7 @@ use axum::{extract::State, response::IntoResponse, routing::post, Form, Router};
 use crate::schema;
 
 async fn register(
-    State(pool): State<sqlx::AnyPool>,
+    State(pool): State<sqlx::PgPool>,
     Form(data): Form<schema::RegisterGJAccount>,
 ) -> Result<impl IntoResponse, impl IntoResponse> {
     if !data.user_name.chars().all(char::is_alphanumeric) {
@@ -30,7 +30,7 @@ async fn register(
     Ok(())
 }
 
-pub(super) fn router(pool: sqlx::AnyPool) -> Router {
+pub(super) fn router(pool: sqlx::PgPool) -> Router {
     Router::new()
         .route("/accounts/registerGJAccount.php", post(register))
         .with_state(pool)

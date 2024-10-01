@@ -1,0 +1,10 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    ports:
+      - 5432:5432
+    volumes:
+      - ./pgsql:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: bromide
+      POSTGRES_PASSWORD: qwerty

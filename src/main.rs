@@ -14,11 +14,12 @@ async fn main() {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    info!("connection to the database");
-    sqlx::any::install_default_drivers();
-
-    let database_url = std::env::var("DATABASE_URL").unwrap_or_else(|_| "sqlite:bromide.db".into());
-    let pool = sqlx::AnyPool::connect(&database_url)
+    info!("connecting to the database");
+    let database_url = std::env::var("DATABASE_URL").unwrap_or_else(|_| {
+        error!("DATABASE_URL is not set");
+        std::process::exit(1);
+    });
+    let pool = sqlx::PgPool::connect(&database_url)
         .await
         .unwrap_or_else(|err| {
             error!("failed to connect to database `{database_url}`: {err}");
