@@ -15,4 +15,8 @@ target/
 # Database
 *.db*
 
+# from mitmproxy script
 __pycache__/
+
+# postgresql docker volume
+pgsql/
