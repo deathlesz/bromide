@@ -29,16 +29,25 @@ async fn register(
         return Err("-6")?;
     }
 
-    sqlx::query!(
-        "insert into accounts (user_name, password, email) values ($1, $2, $3)",
+    // using transaction here, so that if the user fails to be inserted, the account is rolled back
+    let mut transaction = pool.begin().await?;
+
+    let aid = sqlx::query_scalar!(
+        "insert into accounts (user_name, password, email) values ($1, $2, $3) returning id",
         data.user_name,
         utils::password_hash(data.password),
         data.email
     )
-    .execute(&pool)
+    .fetch_one(&mut *transaction)
     .await
     .on_constraint("accounts_user_name_key", |_| "-2")
     .on_constraint("accounts_email_key", |_| "-3")?;
+
+    sqlx::query!("insert into users (account_id) VALUES ($1)", aid)
+        .execute(&mut *transaction)
+        .await?;
+
+    transaction.commit().await?;
 
     Ok("1")
 }
@@ -54,7 +63,7 @@ async fn login(
     }
 
     let result = sqlx::query!(
-        "select id, password, uid from accounts where user_name = $1",
+        "select a.id as aid, a.password, u.id as uid from accounts a join users u on a.id = u.account_id where user_name = $1",
         data.user_name,
     )
     .fetch_one(&pool)
@@ -63,7 +72,7 @@ async fn login(
     if utils::check_password(&result.password, &data.gjp2) {
         Err("-11")?
     } else {
-        Ok(format!("{},{}", result.id, result.uid))
+        Ok(format!("{},{}", result.aid, result.uid))
     }
 }
 
