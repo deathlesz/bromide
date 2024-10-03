@@ -4,6 +4,7 @@ version = "0.1.0"
 authors = ["Deathlesz"]
 edition = "2021"
 description = "A server software reimplementation for a certain platformer."
+readme = "README.md"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
