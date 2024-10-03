@@ -35,7 +35,9 @@ async fn register(
     let aid = sqlx::query_scalar!(
         "insert into accounts (user_name, password, email) values ($1, $2, $3) returning id",
         data.user_name,
-        utils::password_hash(data.password),
+        tokio::task::spawn_blocking(|| utils::password_hash(data.password))
+            .await
+            .unwrap(), // unwrapping here because panic would be a developer error
         data.email
     )
     .fetch_one(&mut *transaction)
