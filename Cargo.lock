@@ -199,10 +199,12 @@ dependencies = [
  "axum",
  "email_address",
  "serde",
+ "serde_urlencoded",
  "sha1_smol",
  "sqlx",
  "thiserror",
  "tokio",
+ "tower",
  "tracing",
  "tracing-subscriber",
 ]

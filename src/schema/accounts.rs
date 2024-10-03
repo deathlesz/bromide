@@ -1,6 +1,6 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Deserialize, Serialize)]
 pub struct RegisterGJAccount {
     #[serde(rename = "userName")]
     pub user_name: String,
@@ -9,7 +9,7 @@ pub struct RegisterGJAccount {
     pub secret: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Deserialize, Serialize)]
 pub struct LoginGJAccount {
     pub udid: String,
     #[serde(rename = "userName")]

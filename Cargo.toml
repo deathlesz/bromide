@@ -17,3 +17,7 @@ thiserror = "1"
 argon2 = "0.5"
 sha1_smol = { version = "1", features = ["std"] }
 email_address = "0.2"
+
+[dev-dependencies]
+serde_urlencoded = "0.7"
+tower = { version = "0.5", features = ["util"] }
