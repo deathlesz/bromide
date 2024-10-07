@@ -2,6 +2,7 @@ use tracing::{error, info};
 use tracing_subscriber::{layer::SubscriberExt as _, util::SubscriberInitExt as _};
 
 mod error;
+mod form;
 pub mod router;
 pub mod schema;
 mod utils;

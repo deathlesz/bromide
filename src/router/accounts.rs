@@ -1,7 +1,8 @@
-use axum::{extract::State, response::IntoResponse, routing::post, Form, Router};
+use axum::{extract::State, response::IntoResponse, routing::post, Router};
 
 use crate::{
     error::{Result, ResultExt as _},
+    form::Form,
     schema, utils,
 };
 

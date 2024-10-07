@@ -8,7 +8,7 @@ readme = "README.md"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-axum = { version = "0.7", features = ["tracing"] }
+axum = { version = "0.7", default-features = false, features = ["http1", "tokio", "tower-log", "tracing"] }
 sqlx = { version = "0.8", features = ["postgres", "runtime-tokio"] }
 tokio = { version = "1.40", features = ["macros", "rt-multi-thread"] }
 tracing = "0.1"
@@ -18,7 +18,7 @@ thiserror = "1"
 argon2 = "0.5"
 sha1_smol = { version = "1", features = ["std"] }
 email_address = "0.2"
+serde_urlencoded = "0.7"
 
 [dev-dependencies]
-serde_urlencoded = "0.7"
 tower = { version = "0.5", features = ["util"] }
