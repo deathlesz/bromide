@@ -7,6 +7,8 @@ use tower::ServiceExt;
 
 mod common;
 
+const SECRET: &str = "Wmfv3899gc9";
+
 #[sqlx::test]
 async fn register_fail_if_invalid_secret(pool: PgPool) {
     let mut server = router(pool);
@@ -43,7 +45,7 @@ async fn register_fail_if_invalid_user_name(pool: PgPool) {
         let response = (&mut server)
             .oneshot(
                 Request::post("/accounts/registerGJAccount.php").form(&RegisterGJAccount {
-                    secret: "Wmfv3899gc9".into(),
+                    secret: SECRET.into(),
                     user_name: user_name.into(),
                     password: "test".into(),
                     email: "testing@test.test".into(),
@@ -64,7 +66,7 @@ async fn register_fail_on_user_name_length(pool: PgPool) {
     let response = (&mut server)
         .oneshot(
             Request::post("/accounts/registerGJAccount.php").form(&RegisterGJAccount {
-                secret: "Wmfv3899gc9".into(),
+                secret: SECRET.into(),
                 user_name: "t".into(),
                 password: "testing".into(),
                 email: "testing@test.test".into(),
@@ -79,7 +81,7 @@ async fn register_fail_on_user_name_length(pool: PgPool) {
     let response = (&mut server)
         .oneshot(
             Request::post("/accounts/registerGJAccount.php").form(&RegisterGJAccount {
-                secret: "Wmfv3899gc9".into(),
+                secret: SECRET.into(),
                 user_name: "testtesttesttesttestt".into(), // 1 more than allowed
                 password: "testing".into(),
                 email: "testing@test.test".into(),
@@ -108,7 +110,7 @@ async fn register_fail_if_invalid_password(pool: PgPool) {
         let response = (&mut server)
             .oneshot(
                 Request::post("/accounts/registerGJAccount.php").form(&RegisterGJAccount {
-                    secret: "Wmfv3899gc9".into(),
+                    secret: SECRET.into(),
                     user_name: "test".into(),
                     password: password.into(),
                     email: "testing@test.test".into(),
@@ -130,7 +132,7 @@ async fn register_fail_on_password_length(pool: PgPool) {
     let response = (&mut server)
         .oneshot(
             Request::post("/accounts/registerGJAccount.php").form(&RegisterGJAccount {
-                secret: "Wmfv3899gc9".into(),
+                secret: SECRET.into(),
                 user_name: "test".into(),
                 password: "t".into(),
                 email: "testing@test.test".into(),
@@ -145,7 +147,7 @@ async fn register_fail_on_password_length(pool: PgPool) {
     let response = (&mut server)
         .oneshot(
             Request::post("/accounts/registerGJAccount.php").form(&RegisterGJAccount {
-                secret: "Wmfv3899gc9".into(),
+                secret: SECRET.into(),
                 user_name: "test".into(),
                 password: "testingtestingtesting".into(), // exactly 1 more than allowed
                 email: "testing@test.test".into(),
@@ -175,7 +177,7 @@ async fn register_fail_if_invalid_email(pool: PgPool) {
         let response = (&mut server)
             .oneshot(
                 Request::post("/accounts/registerGJAccount.php").form(&RegisterGJAccount {
-                    secret: "Wmfv3899gc9".into(),
+                    secret: SECRET.into(),
                     user_name: "test".into(),
                     password: "testing".into(),
                     email: email.into(),
@@ -196,7 +198,7 @@ async fn register_fail_if_user_name_exists(pool: PgPool) {
     let response = (&mut server)
         .oneshot(
             Request::post("/accounts/registerGJAccount.php").form(&RegisterGJAccount {
-                secret: "Wmfv3899gc9".into(),
+                secret: SECRET.into(),
                 user_name: "testing".into(),
                 password: "testing".into(),
                 email: "testing1@test.test".into(),
@@ -210,7 +212,7 @@ async fn register_fail_if_user_name_exists(pool: PgPool) {
     let response = (&mut server)
         .oneshot(
             Request::post("/accounts/registerGJAccount.php").form(&RegisterGJAccount {
-                secret: "Wmfv3899gc9".into(),
+                secret: SECRET.into(),
                 user_name: "testing".into(),
                 password: "testing".into(),
                 email: "testing2@test.test".into(),
@@ -229,7 +231,7 @@ async fn register_fail_if_email_exists(pool: PgPool) {
     let response = (&mut server)
         .oneshot(
             Request::post("/accounts/registerGJAccount.php").form(&RegisterGJAccount {
-                secret: "Wmfv3899gc9".into(),
+                secret: SECRET.into(),
                 user_name: "testingemail".into(),
                 password: "testing".into(),
                 email: "testingemail@test.test".into(),
@@ -243,7 +245,7 @@ async fn register_fail_if_email_exists(pool: PgPool) {
     let response = (&mut server)
         .oneshot(
             Request::post("/accounts/registerGJAccount.php").form(&RegisterGJAccount {
-                secret: "Wmfv3899gc9".into(),
+                secret: SECRET.into(),
                 user_name: "testingemail2".into(),
                 password: "testing".into(),
                 email: "testingemail@test.test".into(),
@@ -253,4 +255,72 @@ async fn register_fail_if_email_exists(pool: PgPool) {
         .unwrap();
 
     assert_eq!(common::body_into_string(response.into_body()).await, "-3");
+}
+
+#[sqlx::test]
+async fn login_fail_if_invalid_secret(pool: PgPool) {
+    let mut server = router(pool);
+
+    let response = (&mut server)
+        .oneshot(
+            Request::post("/accounts/loginGJAccount.php").form(&LoginGJAccount {
+                udid: "".into(),
+                user_name: "testing".into(),
+                gjp2: "testing".into(), // it's invalid but it doesn't matter here
+                secret: "".into(),
+            }),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(common::body_into_string(response.into_body()).await, "-1")
+}
+
+#[sqlx::test]
+async fn login_fail_on_user_name_length(pool: PgPool) {
+    let mut server = router(pool);
+
+    // too short
+    let response = (&mut server)
+        .oneshot(
+            Request::post("/accounts/loginGJAccount.php").form(&LoginGJAccount {
+                udid: "".into(),
+                user_name: "testa".into(),
+                gjp2: "testing".into(), // it's invalid but it doesn't matter here
+                secret: SECRET.into(),
+            }),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(common::body_into_string(response.into_body()).await, "-9")
+}
+
+#[sqlx::test(fixtures("accounts", "users"))]
+async fn login_success(pool: PgPool) {
+    let mut server = router(pool);
+
+    let mut accounts = std::collections::HashMap::new();
+    accounts.insert((1, "test1aa"), "151b21ec5773a54dc76ea247ebb10fb2c505e235");
+    accounts.insert((2, "test2aa"), "baec485a5c517708378233ea257a7675121b2c2f");
+    accounts.insert((3, "test3aa"), "a699ec1046780d22408d88e3974a32f9801cf6f5");
+
+    for ((id, user_name), gjp2) in accounts {
+        let response = (&mut server)
+            .oneshot(
+                Request::post("/accounts/loginGJAccount.php").form(&LoginGJAccount {
+                    udid: "".into(),
+                    user_name: user_name.into(),
+                    gjp2: gjp2.into(), // it's invalid but it doesn't matter here
+                    secret: SECRET.into(),
+                }),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(
+            common::body_into_string(response.into_body()).await,
+            format!("{id},{id}")
+        )
+    }
 }
