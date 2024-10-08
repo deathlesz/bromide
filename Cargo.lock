@@ -195,6 +195,7 @@ dependencies = [
  "argon2",
  "axum",
  "email_address",
+ "hex",
  "serde",
  "serde_urlencoded",
  "sha1_smol",

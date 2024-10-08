@@ -72,7 +72,7 @@ async fn login(
     .fetch_one(&pool)
     .await?;
 
-    if utils::check_password(&result.password, &data.gjp2) {
+    if !utils::check_password(&result.password, &data.gjp2) {
         Err("-11")?
     } else {
         Ok(format!("{},{}", result.aid, result.uid))
