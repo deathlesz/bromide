@@ -194,6 +194,7 @@ version = "0.1.0"
 dependencies = [
  "argon2",
  "axum",
+ "base64",
  "email_address",
  "hex",
  "serde",
