@@ -264,7 +264,6 @@ async fn login_fail_if_invalid_secret(pool: PgPool) {
     let response = (&mut server)
         .oneshot(
             Request::post("/accounts/loginGJAccount.php").form(&LoginGJAccount {
-                udid: "".into(),
                 user_name: "testing".into(),
                 gjp2: "testing".into(), // it's invalid but it doesn't matter here
                 secret: "".into(),
@@ -284,7 +283,6 @@ async fn login_fail_on_user_name_length(pool: PgPool) {
     let response = (&mut server)
         .oneshot(
             Request::post("/accounts/loginGJAccount.php").form(&LoginGJAccount {
-                udid: "".into(),
                 user_name: "testa".into(),
                 gjp2: "testing".into(), // it's invalid but it doesn't matter here
                 secret: SECRET.into(),
@@ -301,15 +299,14 @@ async fn login_success(pool: PgPool) {
     let mut server = router(pool);
 
     let mut accounts = std::collections::HashMap::new();
-    accounts.insert((1, "test1aa"), "151b21ec5773a54dc76ea247ebb10fb2c505e235");
-    accounts.insert((2, "test2aa"), "baec485a5c517708378233ea257a7675121b2c2f");
-    accounts.insert((3, "test3aa"), "a699ec1046780d22408d88e3974a32f9801cf6f5");
+    accounts.insert((1, "test1aa"), "daa5183ce7724fbb18cc7fdb6f001cdc125dfd36");
+    accounts.insert((2, "test2aa"), "dab00cb25233b69987a07278915efa3e01c3bcaf");
+    accounts.insert((3, "test3aa"), "e72d536b3a1b518f34218db513015ab86107c879");
 
     for ((id, user_name), gjp2) in accounts {
         let response = (&mut server)
             .oneshot(
                 Request::post("/accounts/loginGJAccount.php").form(&LoginGJAccount {
-                    udid: "".into(),
                     user_name: user_name.into(),
                     gjp2: gjp2.into(), // it's invalid but it doesn't matter here
                     secret: SECRET.into(),

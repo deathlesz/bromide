@@ -11,7 +11,6 @@ pub struct RegisterGJAccount {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Deserialize, Serialize)]
 pub struct LoginGJAccount {
-    pub udid: String,
     #[serde(rename = "userName")]
     pub user_name: String,
     pub gjp2: String,
