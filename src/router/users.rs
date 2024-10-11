@@ -11,7 +11,7 @@ async fn update_user(
     }
 
     let password = sqlx::query_scalar!(
-        "select password from accounts where id = $1 and user_name = $2",
+        "SELECT password FROM accounts WHERE id = $1 AND user_name = $2",
         data.account_id,
         data.user_name,
     )
