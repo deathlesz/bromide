@@ -34,7 +34,7 @@ async fn register(
     let mut transaction = pool.begin().await?;
 
     let aid = sqlx::query_scalar!(
-        "insert into accounts (user_name, password, email) values ($1, $2, $3) returning id",
+        "INSERT INTO ACCOUNTS (user_name, password, email) VALUES ($1, $2, $3) RETURNING id",
         data.user_name,
         tokio::task::spawn_blocking(|| utils::password_hash(data.password))
             .await
@@ -46,7 +46,7 @@ async fn register(
     .on_constraint("accounts_user_name_key", |_| "-2")
     .on_constraint("accounts_email_key", |_| "-3")?;
 
-    sqlx::query!("insert into users (account_id) VALUES ($1)", aid)
+    sqlx::query!("INSERT INTO USERS (account_id) VALUES ($1)", aid)
         .execute(&mut *transaction)
         .await?;
 
@@ -66,7 +66,7 @@ async fn login(
     }
 
     let result = sqlx::query!(
-        "select a.id as aid, a.password, u.id as uid from accounts a join users u on a.id = u.account_id where user_name = $1",
+        "SELECT a.id AS aid, a.password, u.id AS uid FROM accounts AS a JOIN users AS u ON a.id = u.account_id WHERE user_name = $1",
         data.user_name,
     )
     .fetch_one(&pool)
